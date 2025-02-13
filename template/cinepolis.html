@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinépolis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/cinepolis.css">
+</head>
+<body>
+    <div class="container text-center">
+        <div class="cine">Cinépolis</div>
+    </div>
+    
+    <div class="container-box">
+        <div class="container col-md-5">
+            <h5>Entradas</h5>
+            <input id="nombre" type="text" class="form-control mb-2" placeholder="Nombre">
+            <input id="cantidadPersonas" type="number" class="form-control mb-2" placeholder="Cantidad Compradores">
+            <div class="mb-2">
+                <label>Tarjeta Cinéco:</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="tarjeta" value="si"> Sí
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="tarjeta" value="no"> No
+                </div>
+            </div>
+            <input id="cantidadBoletos" type="number" class="form-control mb-2" placeholder="Cantidad de Boletos">
+        </div>
+        
+        <div class="container col-md-5">
+            <h5>Salidas</h5>
+            <input id="valorAPagar" type="text" class="form-control" placeholder="Valor a Pagar" readonly>
+        </div>
+    </div>
+    
+    <div class="container text-center mt-3" style="max-width: 400px;">
+        <h5>Acciones</h5>
+        <button class="btn btn-primary" onclick="procesar()">Procesar</button>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function procesar() {
+            const cantidadPersonas = parseInt(document.getElementById("cantidadPersonas").value);
+            const cantidadBoletos = parseInt(document.getElementById("cantidadBoletos").value);
+            const tarjeta = document.querySelector('input[name="tarjeta"]:checked')?.value;
+            
+            // Calcula el máximo de boletos según las personas
+            const maxBoletos = cantidadPersonas * 7;
+            
+            if (cantidadBoletos > maxBoletos) {
+                alert(`Solo puedes comprar hasta ${maxBoletos} boletos.`);
+                return;
+            }
+            
+            const datos = {
+                cantidadPersonas: cantidadPersonas,
+                cantidadBoletos: cantidadBoletos,
+                tarjeta: tarjeta
+            };
+            
+            fetch('/calculo_Cine', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById("valorAPagar").value = data.total;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
