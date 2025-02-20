@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request , jsonify, url_for
-
+from flask import Flask, render_template, request , jsonify , url_for
+import forms
 app = Flask(__name__, template_folder="template")
 
 
@@ -177,6 +177,27 @@ def zodiaco_chino():
         "signo_chino": resultado_signo,
         "imagen": imagen
     })
+
+
+@app.route("/alumnos", methods=["GET","POST"])
+def alumnos():
+        mat=''
+        nom=''
+        ap=''
+        email=''
+
+        alumno_clas=forms.UserForm(request.form)
+        if request.method == "POST":
+            mat = alumno_clas.mat.data
+            nom = alumno_clas.nom.data
+            ap = alumno_clas.ap.data
+            email = alumno_clas.correo.data
+
+
+        return render_template("alumnos.html",  form = alumno_clas, mat = mat, nom = nom, ap = ap, correo = email)
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True,port=3000)
