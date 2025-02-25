@@ -23,25 +23,12 @@
 
     <button type="submit">Calcular</button><br>
 
+    {% if resultado %}
     <label for="resultado">Resultado:</label><br>
-    <input type="text" id="resultado" name="resultado" >
+    <input type="text" id="resultado" name="resultado" value="{{ resultado }}" readonly>
+    {% endif %}
+
 </form>
-
-
-<script>
-    document.getElementById("numeros").onsubmit = async function(event) {
-        event.preventDefault();
-    
-        let formData = new FormData(this);
-        let response = await fetch("/resultado2", {
-            method: "POST",
-            body: formData
-        });
-    
-        let result = await response.text();
-        document.getElementById("resultado").value = result;
-    };
-</script>
 
 
 

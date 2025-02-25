@@ -1,14 +1,43 @@
 from flask import Flask, render_template, request , jsonify , url_for
 import forms
+from flask_wtf.csrf import CSRFProtect
+from flask import flash
+from flask import g
 app = Flask(__name__, template_folder="template")
+app.secret_key="esta es una clave secreta"
+csrf=CSRFProtect()
+
+
+@app.errorhandler(404)
+def page_notfound(e):
+    return render_template("404.html"),404
+
+
+#decoradores
+@app.before_request
+def before_requestr():
+    g.user = "mario"
+    print("beforer 1")
+
+@app.after_request
+def afeter_requestr(response):
+    print("afterr 3")
+    return response
+
+#parametros entre rutas
+
+
 
 
 
 @app.route("/")
 def index():
+    nom="none"
     titulo="IDGS801"
     lista=["pedro","juan","luis"]
-    return render_template("index.html",titulo=titulo,lista=lista)
+    nom=g.user
+    print("index 2 {}".format(g.user))
+    return render_template("index.html",titulo=titulo,lista=lista,nom=nom)
 
 @app.route("/ejemplo1")
 def ejemplo1():
@@ -72,7 +101,7 @@ def result():
 
 @app.route("/resultado2", methods=["POST"])
 def resultado2():
-    
+    if request.method == "POST":
         n1 = float(request.form.get("n1"))
         n2 = float(request.form.get("n2"))
         operacion = request.form.get("operacion")
@@ -84,11 +113,11 @@ def resultado2():
         elif operacion == "multiplicacion":
             resultado = n1 * n2
         elif operacion == "division":
-            resultado = n1 / n2 
+            resultado = n1 / n2
         else:
             resultado = "Operación no válida"
 
-        return str(resultado)
+        return render_template("operaBass.html", resultado=resultado)
 
 @app.route("/cinepolis")
 def cine():
@@ -96,28 +125,32 @@ def cine():
 
 @app.route("/calculo_Cine", methods=["POST"])
 def calculo_Cine():
-    data = request.json
-    personas = int(data.get("cantidadPersonas", 0))
-    boletos = int(data.get("cantidadBoletos", 0))
-    cineco = data.get("tarjeta")
-    
-    max_boletos = personas * 7
-    precio = 12
-    
-    if boletos > max_boletos:
-        return jsonify({"error": f"Solo puedes comprar hasta {max_boletos} boletos."}), 400
-    
-    total = boletos * precio
-    
-    if boletos > 5:
-        total *= 0.85
-    elif boletos >= 3:
-        total *= 0.90
-    
-    if cineco == "si":
-        total *= 0.90
-    
-    return jsonify({"total": f"${total:.2f}"})
+    if request.method == "POST":
+        
+        nombre = request.form.get("nombre")
+        cantidad_personas = int(request.form.get("cantidadPersonas", 0))
+        cantidad_boletos = int(request.form.get("cantidadBoletos", 0))
+        tarjeta = request.form.get("tarjeta")
+
+        max_boletos = cantidad_personas * 7
+
+        if cantidad_boletos > max_boletos:
+            error = f"Solo puedes comprar hasta {max_boletos} boletos."
+            return render_template("cinepolis.html", error=error)
+
+        precio = 12
+        total = cantidad_boletos * precio
+
+        if cantidad_boletos > 5:
+            total *= 0.85
+        elif cantidad_boletos >= 3:
+            total *= 0.90
+
+        if tarjeta == "si":
+            total *= 0.90
+
+        
+        return render_template("cinepolis.html", total=f"${total:.2f}", max_boletos=max_boletos)
 
 
 @app.route("/zodiacoChino")
@@ -181,23 +214,25 @@ def zodiaco_chino():
 
 @app.route("/alumnos", methods=["GET","POST"])
 def alumnos():
-        mat=''
+        mat=0
         nom=''
         ap=''
         email=''
 
         alumno_clas=forms.UserForm(request.form)
-        if request.method == "POST":
+        if request.method == "POST" and alumno_clas.validate():
             mat = alumno_clas.mat.data
             nom = alumno_clas.nom.data
             ap = alumno_clas.ap.data
             email = alumno_clas.correo.data
 
-
+            mensaje="bienvenido {}".format(nom)
+            flash(mensaje)
         return render_template("alumnos.html",  form = alumno_clas, mat = mat, nom = nom, ap = ap, correo = email)
 
 
 
 
 if __name__ == "__main__":
+    csrf.init_app(app)
     app.run(debug=True,port=3000)
