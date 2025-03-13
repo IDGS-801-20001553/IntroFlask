@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request , jsonify , url_for
 import forms
+from forms import ZodiacoForm
 from flask_wtf.csrf import CSRFProtect
 from flask import flash
 from flask import g
@@ -153,9 +154,8 @@ def calculo_Cine():
         return render_template("cinepolis.html", total=f"${total:.2f}", max_boletos=max_boletos)
 
 
-@app.route("/zodiacoChino")
-def zodiaco():
-    return render_template("zodiacoChino.html")
+
+
 
 def signo_chino(anio):
     signos_chinos = {
@@ -192,24 +192,33 @@ def signo_chino(anio):
         if anio in años:
             return signo, imagenes[signo]
 
-@app.route('/zodiacoChino', methods=['POST'])
-def zodiaco_chino():
-    nombre = request.form.get('nombre')
-    apaterno = request.form.get('apaterno')
-    amaterno = request.form.get('amaterno')
-    anio = int(request.form.get('anio'))
-    
-    edad = 2025 - anio
-    resultado_signo, imagen = signo_chino(anio)
+@app.route("/zodiacoChino2", methods=["GET", "POST"])
+def zodiaco_chino2():
+    form = ZodiacoForm(request.form)
+    resultado = None
 
-    return jsonify({
-        "nombre": nombre,
-        "apaterno": apaterno,
-        "amaterno": amaterno,
-        "edad": edad,
-        "signo_chino": resultado_signo,
-        "imagen": imagen
-    })
+    if request.method == "POST" and form.validate():
+        nombre = form.nombre.data
+        apaterno = form.apaterno.data
+        amaterno = form.amaterno.data
+        anio = form.anio.data
+
+        edad = 2025 - anio
+        resultado_signo, imagen = signo_chino(anio)
+
+        resultado = {
+            "nombre": nombre,
+            "apaterno": apaterno,
+            "amaterno": amaterno,
+            "edad": edad,
+            "signo_chino": resultado_signo,
+            "imagen": imagen
+        }
+
+        mensaje = f"Bienvenido {nombre} {apaterno} {amaterno}"
+        flash(mensaje)
+
+    return render_template("zodiacoChino.html", form=form, resultado=resultado)
 
 
 @app.route("/alumnos", methods=["GET","POST"])

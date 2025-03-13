@@ -7,20 +7,16 @@
 {%endmacro%}
 
 
-{%macro camposNuevos(field) %}
-
-<td>{{field.label}}</td>
-<dd>{{field(**kwargs) | safe}}</dd>
-
-{%if field.errors%}
-
-<ul>
-    {%for error in field.errors%}
-    <li style="color: red;">{{error}}</li>
-    {%endfor%}
-</ul>
-
-{%endif%}
-
-{%endmacro%}
+{% macro camposNuevos(field, class="", placeholder="") %}
+<div class="form-group">
+    {{ field(class=class, placeholder=placeholder, **kwargs) | safe }}
+    {% if field.errors %}
+        <ul>
+            {% for error in field.errors %}
+                <li style="color: red;">{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endmacro %}
 
